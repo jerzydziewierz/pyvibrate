@@ -9,4 +9,5 @@ Usage:
     from pyvibrate.frequencydomain import Network, R, C, L, ACSource, ...
 """
 
-__all__ = ["timedomain", "frequencydomain"]
+__version__ = "0.1.0"
+__all__ = ["timedomain", "frequencydomain", "__version__"]

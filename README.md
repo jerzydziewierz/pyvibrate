@@ -1,4 +1,4 @@
-# Python Spice Simulator with JAX Autodiff
+# Python SPICE with JAX for equivalent circuit parameter recovery
 
 A JAX-compatible circuit simulator with automatic differentiation support.
 
