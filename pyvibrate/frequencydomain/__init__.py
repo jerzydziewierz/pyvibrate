@@ -1,0 +1,36 @@
+"""PyVibrate Frequency-Domain Simulation Module.
+
+This module provides JAX-compatible frequency-domain circuit analysis
+using Modified Nodal Analysis (MNA) with complex admittances.
+
+Components:
+    - R, C, L: Basic passive components
+    - ACSource: AC voltage source with magnitude and phase
+    - PhaseShift: Pure phase delay element
+    - VCVS: Voltage-controlled voltage source
+    - TLine: Transmission line with characteristic impedance and delay
+"""
+
+from .network import Network, Node, ComponentRef, ComponentSpec
+from .components import R, ACSource, C, L, PhaseShift, VCVS, TLine
+from .solver import Solver, Solution, compile_network
+
+__all__ = [
+    # Network building
+    "Network",
+    "Node",
+    "ComponentRef",
+    "ComponentSpec",
+    # Components
+    "R",
+    "C",
+    "L",
+    "ACSource",
+    "PhaseShift",
+    "VCVS",
+    "TLine",
+    # Solver
+    "Solver",
+    "Solution",
+    "compile_network",
+]
