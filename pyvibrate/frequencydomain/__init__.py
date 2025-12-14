@@ -14,6 +14,7 @@ Components:
 from .network import Network, Node, ComponentRef, ComponentSpec
 from .components import R, ACSource, C, L, PhaseShift, VCVS, TLine
 from .solver import Solver, Solution, compile_network
+from .subcircuits import Series, Parallel
 
 __all__ = [
     # Network building
@@ -33,4 +34,7 @@ __all__ = [
     "Solver",
     "Solution",
     "compile_network",
+    # Subcircuits
+    "Series",
+    "Parallel",
 ]

@@ -66,3 +66,6 @@ pyvibrate/
 - `demo_rlc_01.ipynb` - H-bridge driven RLC with ring-down
 - `demo_vcr_01.ipynb` - VCR frequency mixing demonstration
 - `demo_delay_line.ipynb` - Delay line: pulse delay with FFT phase analysis
+
+### Next step
+

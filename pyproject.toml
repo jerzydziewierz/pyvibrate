@@ -42,6 +42,7 @@ dependencies = [
     "jaxlib>=0.4.0",
     "jupyter>=1.0",
     "matplotlib>=3.5",
+    "pytest"
 ]
 
 [project.optional-dependencies]
