@@ -101,31 +101,17 @@ RANDOM_SUFFIX=$(head /dev/urandom | tr -dc 'a-z0-9' | head -c 6)
 BASENAME="${FALSTAD_FILE%.txt}"
 TEMP_PROMPT="/tmp/claude_implement_${BASENAME}_${TIMESTAMP}_${RANDOM_SUFFIX}.md"
 
-# Show the Falstad file contents for reference
-echo -e "${YELLOW}=== Falstad circuit contents ===${NC}"
-cat "$FALSTAD_DIR/$FALSTAD_FILE"
-echo ""
-
-# Create prompt by building it in parts (avoids shell escaping issues)
+# Perform substitution
 echo -e "${YELLOW}Creating prompt for: $FALSTAD_FILE${NC}"
-
-# Use a temp file for the circuit contents to avoid escaping issues
-TEMP_CONTENTS="/tmp/falstad_contents_${RANDOM_SUFFIX}.txt"
-cat "$FALSTAD_DIR/$FALSTAD_FILE" > "$TEMP_CONTENTS"
-
-# Build the prompt: replace {{FALSTAD_FILE}} with sed, then use awk to insert file contents
-sed "s/{{FALSTAD_FILE}}/$FALSTAD_FILE/g" "$TEMPLATE" | \
-awk -v contentsfile="$TEMP_CONTENTS" '
-/\{\{FALSTAD_CONTENTS\}\}/ {
-    while ((getline line < contentsfile) > 0) print line
-    next
-}
-{ print }
-' > "$TEMP_PROMPT"
-
-rm -f "$TEMP_CONTENTS"
+sed "s/{{FALSTAD_FILE}}/$FALSTAD_FILE/g" "$TEMPLATE" > "$TEMP_PROMPT"
 
 echo -e "${GREEN}Prompt created: $TEMP_PROMPT${NC}"
+echo ""
+
+# Show the Falstad file contents for reference
+echo -e "${YELLOW}=== Falstad circuit contents ===${NC}"
+head -20 "$FALSTAD_DIR/$FALSTAD_FILE"
+echo "..."
 echo ""
 
 # Create log file for this session
@@ -141,8 +127,14 @@ echo ""
 # Run Claude Code with the prompt (interactive mode for user approval of writes)
 cd "$PROJECT_DIR"
 
-# The prompt file will be passed as initial input
-claude --print "$(cat "$TEMP_PROMPT")" 2>&1 | tee "$LOG_FILE"
+# Use 'script' to capture session while preserving interactivity
+# Create a runner script to avoid quoting issues with prompt content
+TEMP_RUNNER="/tmp/claude_runner_${RANDOM_SUFFIX}.sh"
+cat > "$TEMP_RUNNER" << RUNNER_EOF
+#!/bin/bash
+claude --model "$MODEL" "\$(cat '$TEMP_PROMPT')"
+RUNNER_EOF
+chmod +x "$TEMP_RUNNER"
 
 script -q -c "$TEMP_RUNNER" "$LOG_FILE"
 
