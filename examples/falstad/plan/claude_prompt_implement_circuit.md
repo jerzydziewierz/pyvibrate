@@ -472,3 +472,5 @@ python examples/falstad/[subdirectory]/[your_file].py
 ```
 
 Verify output looks reasonable, gradients are finite, and plots are generated.
+
+Finally, write your findings into [[subdirectory]/[your_file]_findings.md] in a tutorial style.

@@ -96,3 +96,37 @@ pyvibrate/
 - TLine uses Y-parameters: Y11 = Y22 = -jcot(ωτ)/Z₀, Y12 = Y21 = jcsc(ωτ)/Z₀
 - PhaseShift is ideal (no reflections), TLine has impedance mismatch effects
 - Solver uses JAX `jnp.linalg.solve` for complex matrix solve
+
+---
+
+## Session: 2025-12-15
+
+### Bandpass Filter Implementation Complete
+
+Implemented `examples/falstad/filters/bandpass_rlc.py` from Falstad's `bandpass.txt`.
+
+**Circuit Topology:**
+- Series R (250Ω) followed by parallel LC tank (L=0.5H, C=31.7μF)
+- At resonance, parallel LC has maximum impedance → maximum voltage transfer
+- This is a standard passive bandpass filter topology
+
+**Key Parameters:**
+- Center frequency: f₀ = 1/(2π√LC) = 39.98 Hz
+- Quality factor: Q = R√(C/L) = 1.99
+- Bandwidth: BW = f₀/Q = 20.08 Hz
+
+**Implementation Features:**
+- Step response simulation showing transient oscillations
+- AC frequency response with Bode magnitude plot
+- Parameter sweep demonstrating Q vs. R relationship
+- JAX differentiability demo (dV/dC gradient)
+- Matplotlib plots for visualization
+
+**Verification:**
+- Peak gain at resonance: 1.0 (0 dB) ✓
+- Symmetric rolloff above/below f₀ ✓
+- DC gain = 0 (correct for bandpass) ✓
+- Increasing R increases Q and narrows bandwidth ✓
+- All gradients finite and meaningful ✓
+
+The implementation follows the established pattern from other filter examples and passes all functional tests.
