@@ -212,7 +212,7 @@ sol = solver.solve_at(omega)
 z_in = solver.z_in(sol, vs)
 print(f"|Z| = {abs(z_in):.1f} ohm, phase = {math.degrees(phase(z_in)):.1f} deg")
 ```
-
+ 
 ## Status
 
 ![tests](https://github.com/jerzydziewierz/pyvibrate/actions/workflows/test.yml/badge.svg)
