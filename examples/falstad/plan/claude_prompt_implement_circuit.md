@@ -6,7 +6,20 @@
 
 **Falstad source file:** `{{FALSTAD_FILE}}`
 
-**Location:** `../from-source/circuit-simulator/src/circuits/{{FALSTAD_FILE}}`
+### Circuit Contents (from Falstad)
+
+```
+{{FALSTAD_CONTENTS}}
+```
+
+### Falstad Format Reference
+
+Each line is: `element_code x1 y1 x2 y2 flags value1 value2 ...`
+- Coordinates (x1,y1)-(x2,y2) define component placement
+- Elements sharing coordinates are connected
+- `$` line: simulation parameters (ignore)
+- `o`/`O` lines: oscilloscope probes (ignore)
+- `w` lines: wires connecting points
 
 ---
 
@@ -62,12 +75,12 @@ You are implementing a Falstad circuit example for the **pyvibrate** library - a
 
 ## Implementation Requirements
 
-### 1. Read and Parse the Falstad File
+### 1. Analyze the Circuit
 
-First, read the Falstad source file to understand:
-- Circuit topology (what connects to what)
-- Component values
-- Any special configurations
+The Falstad circuit contents are provided above. Analyze them to understand:
+- Circuit topology (elements sharing coordinates are connected)
+- Component values (in the element parameters)
+- Key characteristics (filter type, resonant frequency, etc.)
 
 ### 2. Create the Python Implementation
 

@@ -7,11 +7,8 @@
 #   ./implement_circuit.sh bandpass.txt
 #   ./implement_circuit.sh filt-hipass.txt
 #
-# For parallel execution:
-#   ./implement_circuit.sh bandpass.txt &
-#   ./implement_circuit.sh filt-hipass.txt &
-#   ./implement_circuit.sh allpass1.txt &
-#   wait
+# Runs in interactive mode - you'll be prompted to approve file writes.
+# Run circuits sequentially (one at a time) since interaction is required.
 #
 
 set -e
@@ -65,17 +62,31 @@ RANDOM_SUFFIX=$(head /dev/urandom | tr -dc 'a-z0-9' | head -c 6)
 BASENAME="${FALSTAD_FILE%.txt}"
 TEMP_PROMPT="/tmp/claude_implement_${BASENAME}_${TIMESTAMP}_${RANDOM_SUFFIX}.md"
 
-# Perform substitution
-echo -e "${YELLOW}Creating prompt for: $FALSTAD_FILE${NC}"
-sed "s/{{FALSTAD_FILE}}/$FALSTAD_FILE/g" "$TEMPLATE" > "$TEMP_PROMPT"
-
-echo -e "${GREEN}Prompt created: $TEMP_PROMPT${NC}"
-echo ""
-
 # Show the Falstad file contents for reference
 echo -e "${YELLOW}=== Falstad circuit contents ===${NC}"
-head -20 "$FALSTAD_DIR/$FALSTAD_FILE"
-echo "..."
+cat "$FALSTAD_DIR/$FALSTAD_FILE"
+echo ""
+
+# Create prompt by building it in parts (avoids shell escaping issues)
+echo -e "${YELLOW}Creating prompt for: $FALSTAD_FILE${NC}"
+
+# Use a temp file for the circuit contents to avoid escaping issues
+TEMP_CONTENTS="/tmp/falstad_contents_${RANDOM_SUFFIX}.txt"
+cat "$FALSTAD_DIR/$FALSTAD_FILE" > "$TEMP_CONTENTS"
+
+# Build the prompt: replace {{FALSTAD_FILE}} with sed, then use awk to insert file contents
+sed "s/{{FALSTAD_FILE}}/$FALSTAD_FILE/g" "$TEMPLATE" | \
+awk -v contentsfile="$TEMP_CONTENTS" '
+/\{\{FALSTAD_CONTENTS\}\}/ {
+    while ((getline line < contentsfile) > 0) print line
+    next
+}
+{ print }
+' > "$TEMP_PROMPT"
+
+rm -f "$TEMP_CONTENTS"
+
+echo -e "${GREEN}Prompt created: $TEMP_PROMPT${NC}"
 echo ""
 
 # Create log file for this session
@@ -87,14 +98,25 @@ echo -e "${YELLOW}=== Starting Claude Code ===${NC}"
 echo "Log file: $LOG_FILE"
 echo ""
 
-# Run Claude Code with the prompt
-# Using --print to show conversation, redirecting to log as well
+# Run Claude Code with the prompt (interactive mode for user approval of writes)
 cd "$PROJECT_DIR"
 
-# The prompt file will be passed as initial input
-claude --print "$(cat "$TEMP_PROMPT")" 2>&1 | tee "$LOG_FILE"
+# Interactive mode - user approves file writes
+# Use 'script' to capture session while preserving interactivity
+# Note: Cannot run in parallel due to interactive prompts
 
-EXIT_CODE=${PIPESTATUS[0]}
+# Create a runner script to avoid quoting issues with prompt content
+TEMP_RUNNER="/tmp/claude_runner_${RANDOM_SUFFIX}.sh"
+cat > "$TEMP_RUNNER" << RUNNER_EOF
+#!/bin/bash
+claude --model haiku "\$(cat '$TEMP_PROMPT')"
+RUNNER_EOF
+chmod +x "$TEMP_RUNNER"
+
+script -q -c "$TEMP_RUNNER" "$LOG_FILE"
+
+EXIT_CODE=$?
+rm -f "$TEMP_RUNNER"
 
 # Cleanup temp file
 rm -f "$TEMP_PROMPT"
