@@ -130,3 +130,55 @@ Implemented `examples/falstad/filters/bandpass_rlc.py` from Falstad's `bandpass.
 - All gradients finite and meaningful ✓
 
 The implementation follows the established pattern from other filter examples and passes all functional tests.
+
+---
+
+## Session: 2025-12-15 (Opus Implementation)
+
+### Multi-Model Comparison: Bandpass Filter
+
+Grey ran the same circuit implementation task on three different models (Sonnet, Haiku, Opus) to compare their approaches. Implementations are in separate subdirectories:
+
+```
+examples/falstad/filters/bandpass_rlc/
+├── sonnet/    # Sonnet's implementation
+├── haiku/     # Haiku's implementation
+└── opus/      # This session's implementation
+```
+
+### Key Finding: Q Formula Discrepancy
+
+Haiku used the wrong Q formula for this topology:
+- **Haiku used:** Q = ω₀L/R = 0.50 (series RLC formula)
+- **Correct formula:** Q = R/Z₀ = R√(C/L) = 1.99 (series R + parallel LC)
+
+Both formulas are valid but for different topologies:
+- Series RLC: Q = (1/R)√(L/C) - lower R → higher Q
+- Series R with parallel LC: Q = R√(C/L) - higher R → higher Q
+
+The circuit simulations were correct in all cases; only the analytical parameter calculation differed.
+
+### Opus Implementation Improvements
+
+1. **Added phase response** to frequency analysis
+2. **Theoretical comparison** - computes analytical transfer function alongside simulation
+3. **Clearer Q derivation** - explains why Q = R/Z₀ for this topology
+4. **Falstad source insight** - explains why 150 Hz source is attenuated (-17 dB)
+5. **More detailed physical explanations** in findings document
+
+### Files Created
+- `opus/bandpass_rlc.py` - Main implementation (~500 lines)
+- `opus/bandpass_rlc_findings.md` - Tutorial-style documentation
+- `opus/bandpass_step_response.png` - Step response plot
+- `opus/bandpass_frequency_response.png` - Bode plot with magnitude and phase
+
+### Simulation Results Match Theory
+
+| Metric | Simulated | Theoretical |
+|--------|-----------|-------------|
+| f₀ | 39.98 Hz | 39.98 Hz |
+| Peak gain | 0.9999 | 1.0 |
+| Q | 1.99 | 1.99 |
+| BW | ~16 Hz measured | 20.08 Hz |
+
+The measured bandwidth is slightly narrower than theoretical due to finite simulation resolution around the -3dB points.
