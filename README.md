@@ -1,5 +1,7 @@
 # Python SPICE with JAX for equivalent circuit parameter recovery
 
+![tests](https://github.com/jerzydziewierz/pyvibrate/actions/workflows/test.yml/badge.svg)
+
 A JAX-compatible circuit simulator with automatic differentiation support.
 
 Intended for work on piezo transformers, and more widely, for identification of equivalent circuit parameters out of measurable quantities like impedance.
