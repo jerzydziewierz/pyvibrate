@@ -180,13 +180,14 @@ def MySubcircuit(net, terminal_a, terminal_b, prefix="mysub"):
 - Trapezoidal integration for reactive components
 - JAX-compatible for autodiff optimization (sensitivity analysis, gradient descent)
 - Functional/immutable API
+- Primary application: detailed study of circuit behaviour
 
 ### Frequency-Domain (`pyvibrate.frequencydomain`)
 - Steady-state AC analysis at a single frequency
 - Complex phasors for voltages and currents
 - Components: R, C, L, ACSource, PhaseShift, VCVS, TLine
 - JAX-compatible for autodiff optimization (sensitivity analysis, parameter fitting)
-- Target: VNA measurement fitting, piezo transducer modeling
+- Primary application: equivalent circuit discovery by fitting parameters to data obtained from VNA
 
 ## Frequency-Domain Example
 
@@ -214,8 +215,10 @@ print(f"|Z| = {abs(z_in):.1f} ohm, phase = {math.degrees(phase(z_in)):.1f} deg")
 
 ## Status
 
-- Time-domain: 74 tests passing
-- Frequency-domain: 36 tests passing
-- Total: 110 tests passing
+- 159 tests passing
+- 6 examples ported from the famous, brilliant Falstad Circuit Simulator (sourced from: https://github.com/hausen/circuit-simulator )
+- work ongoing to add more worked examples and real-world data
 
-See AGENTS.md for development roadmap.
+If you spot any bugs, please let me know by opening an issue here! https://github.com/jerzydziewierz/pyvibrate/issues
+
+
