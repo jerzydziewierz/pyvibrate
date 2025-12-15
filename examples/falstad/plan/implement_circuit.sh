@@ -101,17 +101,31 @@ RANDOM_SUFFIX=$(head /dev/urandom | tr -dc 'a-z0-9' | head -c 6)
 BASENAME="${FALSTAD_FILE%.txt}"
 TEMP_PROMPT="/tmp/claude_implement_${BASENAME}_${TIMESTAMP}_${RANDOM_SUFFIX}.md"
 
-# Perform substitution
-echo -e "${YELLOW}Creating prompt for: $FALSTAD_FILE${NC}"
-sed "s/{{FALSTAD_FILE}}/$FALSTAD_FILE/g" "$TEMPLATE" > "$TEMP_PROMPT"
-
-echo -e "${GREEN}Prompt created: $TEMP_PROMPT${NC}"
-echo ""
-
 # Show the Falstad file contents for reference
 echo -e "${YELLOW}=== Falstad circuit contents ===${NC}"
-head -20 "$FALSTAD_DIR/$FALSTAD_FILE"
-echo "..."
+cat "$FALSTAD_DIR/$FALSTAD_FILE"
+echo ""
+
+# Build prompt with circuit contents injected
+echo -e "${YELLOW}Creating prompt for: $FALSTAD_FILE${NC}"
+
+# Use temp file to hold circuit contents (avoids shell escaping issues with $, etc.)
+TEMP_CONTENTS="/tmp/falstad_contents_${RANDOM_SUFFIX}.txt"
+cat "$FALSTAD_DIR/$FALSTAD_FILE" > "$TEMP_CONTENTS"
+
+# Replace {{FALSTAD_FILE}} with filename, then inject file contents at {{FALSTAD_CONTENTS}}
+sed "s/{{FALSTAD_FILE}}/$FALSTAD_FILE/g" "$TEMPLATE" | \
+awk -v contentsfile="$TEMP_CONTENTS" '
+/\{\{FALSTAD_CONTENTS\}\}/ {
+    while ((getline line < contentsfile) > 0) print line
+    next
+}
+{ print }
+' > "$TEMP_PROMPT"
+
+rm -f "$TEMP_CONTENTS"
+
+echo -e "${GREEN}Prompt created: $TEMP_PROMPT${NC}"
 echo ""
 
 # Create log file for this session
