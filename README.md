@@ -1,7 +1,5 @@
 # Python SPICE with JAX for equivalent circuit parameter recovery
 
-![tests](https://github.com/jerzydziewierz/pyvibrate/actions/workflows/test.yml/badge.svg)
-
 A JAX-compatible circuit simulator with automatic differentiation support.
 
 Intended for work on piezo transformers, and more widely, for identification of equivalent circuit parameters out of measurable quantities like impedance.
@@ -217,8 +215,11 @@ print(f"|Z| = {abs(z_in):.1f} ohm, phase = {math.degrees(phase(z_in)):.1f} deg")
 
 ## Status
 
+![tests](https://github.com/jerzydziewierz/pyvibrate/actions/workflows/test.yml/badge.svg)
+
+- actively developed as of December 2025
 - 159 tests passing
-- 6 examples ported from the famous, brilliant Falstad Circuit Simulator (sourced from: https://github.com/hausen/circuit-simulator )
+- 6+ examples ported from the famous, brilliant Falstad Circuit Simulator (sourced from: https://github.com/hausen/circuit-simulator )
 - work ongoing to add more worked examples and real-world data
 
 If you spot any bugs, please let me know by opening an issue here! https://github.com/jerzydziewierz/pyvibrate/issues
