@@ -3,7 +3,7 @@ Test: Cross-domain validation of delay line behavior.
 
 Verifies that:
 1. Time-domain DelayLine + FFT yields correct linear phase response
-2. Frequency-domain PhaseShift produces transfer function H(f) = exp(-j*omega*tau)
+2. Frequency-domain ConstantTimeDelayVCVS produces transfer function H(f) = exp(-j*omega*tau)
 3. Time-domain and frequency-domain methods produce identical pulse responses
 """
 import pytest
@@ -132,9 +132,12 @@ def test_timedomain_delay_group_delay():
         f"Group delay should be {tau * 1e6:.1f} us, got {measured_delay * 1e6:.1f} us"
 
 
-def test_freqdomain_phaseshift_sweep():
-    """Frequency sweep of PhaseShift gives linear phase = -omega*tau."""
-    from pyvibrate.frequencydomain import Network, R as FD_R, ACSource, PhaseShift
+def test_freqdomain_tdvcvs_sweep():
+    """Frequency sweep of ConstantTimeDelayVCVS (TDVCVS) gives linear phase = -omega*tau.
+
+    TDVCVS = Time-Delay Voltage-Controlled Voltage Source (active element)
+    """
+    from pyvibrate.frequencydomain import Network, R as FD_R, ACSource, ConstantTimeDelayVCVS
 
     tau = 10e-6  # 10 us
 
@@ -143,8 +146,8 @@ def test_freqdomain_phaseshift_sweep():
     fd_net, n_out = fd_net.node("n_out")
 
     fd_net, vs = ACSource(fd_net, n_in, fd_net.gnd, name="vs", value=1.0)
-    fd_net, ps = PhaseShift(fd_net, n_in, fd_net.gnd, n_out, fd_net.gnd,
-                            name="PS", tau=tau)
+    fd_net, ps = ConstantTimeDelayVCVS(fd_net, n_in, fd_net.gnd, n_out, fd_net.gnd,
+                                       name="PS", tau=tau)
     fd_net, r_load = FD_R(fd_net, n_out, fd_net.gnd, name="R_load", value=1000.0)
 
     solver = fd_net.compile()
@@ -167,7 +170,7 @@ def test_freqdomain_phaseshift_sweep():
 
     # Check magnitude is 1
     assert np.all(np.abs(H_mag - 1.0) < 1e-6), \
-        f"PhaseShift magnitude should be exactly 1"
+        f"ConstantTimeDelayVCVS magnitude should be exactly 1"
 
     # Check phase matches theory
     theoretical_phase = -2 * np.pi * sweep_freqs * tau

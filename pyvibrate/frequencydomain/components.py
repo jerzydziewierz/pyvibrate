@@ -169,7 +169,7 @@ def L(
     return net.add_component(spec)
 
 
-def PhaseShift(
+def ConstantTimeDelayVCVS(
     net: Network,
     in_pos: Node,
     in_neg: Node,
@@ -180,12 +180,19 @@ def PhaseShift(
     tau: float | None = None,
 ) -> tuple[Network, ComponentRef]:
     """
-    Create a pure phase shift element (ideal delay line).
+    Create a constant time delay element (ideal voltage-controlled delay).
 
     V_out = V_in * exp(-j * omega * tau)
 
-    This is an ideal element with no impedance mismatch effects - just pure phase rotation.
-    For transmission line effects with reflections, use TLine instead.
+    This is an ACTIVE element (voltage-controlled voltage source) with:
+    - Infinite input impedance (no loading)
+    - Zero output impedance (ideal voltage source)
+    - No impedance mismatch effects - just pure phase rotation
+    - Can provide energy to the circuit
+
+    The phase shift is frequency-dependent: phase = -omega * tau (radians)
+
+    For transmission line effects with reflections and impedance matching, use TLine instead.
 
     Args:
         net: Network to add to
@@ -200,7 +207,7 @@ def PhaseShift(
         (new_network, component_ref)
 
     Example:
-        net, ps1 = PhaseShift(net, in_p, in_n, out_p, out_n, name="PS1", tau=1e-9)  # 1 ns delay
+        net, delay1 = ConstantTimeDelayVCVS(net, in_p, in_n, out_p, out_n, name="DL1", tau=1e-9)  # 1 ns delay
     """
     defaults = ()
     if tau is not None:
@@ -208,7 +215,7 @@ def PhaseShift(
 
     spec = ComponentSpec(
         name=name,
-        kind="PhaseShift",
+        kind="ConstantTimeDelayVCVS",
         nodes=(in_pos.index, in_neg.index, out_pos.index, out_neg.index),
         extra_vars=1,  # output current
         defaults=defaults,

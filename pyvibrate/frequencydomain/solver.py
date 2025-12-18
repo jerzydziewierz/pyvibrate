@@ -235,15 +235,16 @@ def _stamp_component(Y: Array, I: Array, comp, omega: Array, params: dict,
         if ctrl_neg > 0:
             Y = Y.at[idx, ctrl_neg - 1].add(gain)
 
-    elif kind == "PhaseShift":
-        # Pure phase shift element (ideal delay line)
+    elif kind == "ConstantTimeDelayVCVS":
+        # Constant time delay element (ideal voltage-controlled delay)
         # V_out = V_in * exp(-j*omega*tau)
-        # Implemented as VCVS with complex gain
+        # Implemented as VCVS with frequency-dependent complex gain
+        # This is an active element that can provide energy
         in_pos, in_neg, out_pos, out_neg = nodes
         idx = current_indices[name]
         tau = params.get(f"{name}_tau", 0.0)
 
-        # Complex gain
+        # Complex gain (frequency-dependent phase shift)
         gain = jnp.exp(-1j * omega * tau)
 
         # Output voltage equation

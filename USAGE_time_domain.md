@@ -254,7 +254,7 @@ i_final = sim.i(state, l1)
 # Expected: 10V / 100 Ohm = 0.1 A
 ```
 
-### H-Bridge Motor Control
+### H-Bridge circuit Control
 
 ```python
 net = Network()

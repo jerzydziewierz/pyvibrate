@@ -1,4 +1,13 @@
-"""Tests for frequency-domain PhaseShift component."""
+"""Tests for frequency-domain ConstantTimeDelayVCVS component.
+
+TDVCVS = Time-Delay Voltage-Controlled Voltage Source
+
+This is an ACTIVE element that implements a constant time delay with:
+- Infinite input impedance (no loading)
+- Zero output impedance (ideal voltage source)
+- Frequency-dependent phase shift: phase = -omega * tau
+- Can provide energy to the circuit
+"""
 
 import pytest
 import jax.numpy as jnp
@@ -6,16 +15,16 @@ from jax import grad
 import math
 
 
-def test_phaseshift_zero_delay():
+def test_tdvcvs_zero_delay():
     """With zero delay, output equals input."""
-    from pyvibrate.frequencydomain import Network, R, PhaseShift, ACSource
+    from pyvibrate.frequencydomain import Network, R, ConstantTimeDelayVCVS, ACSource
 
     net = Network()
     net, n1 = net.node("n1")
     net, n2 = net.node("n2")
 
     net, vs = ACSource(net, n1, net.gnd, name="vs", value=1.0)
-    net, ps1 = PhaseShift(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=0.0)
+    net, ps1 = ConstantTimeDelayVCVS(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=0.0)
     net, r1 = R(net, n2, net.gnd, name="R1", value=100.0)
 
     solver = net.compile()
@@ -31,9 +40,9 @@ def test_phaseshift_zero_delay():
     assert abs(v_out - v_in) < 1e-6, f"V_out should equal V_in: {v_out} vs {v_in}"
 
 
-def test_phaseshift_quarter_wave():
+def test_tdvcvs_quarter_wave():
     """At quarter wavelength delay, output is 90 degrees out of phase."""
-    from pyvibrate.frequencydomain import Network, R, PhaseShift, ACSource
+    from pyvibrate.frequencydomain import Network, R, ConstantTimeDelayVCVS, ACSource
 
     net = Network()
     net, n1 = net.node("n1")
@@ -45,7 +54,7 @@ def test_phaseshift_quarter_wave():
     tau_quarter = 1.0 / (4 * freq)
 
     net, vs = ACSource(net, n1, net.gnd, name="vs", value=1.0)
-    net, ps1 = PhaseShift(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=tau_quarter)
+    net, ps1 = ConstantTimeDelayVCVS(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=tau_quarter)
     net, r1 = R(net, n2, net.gnd, name="R1", value=100.0)
 
     solver = net.compile()
@@ -63,9 +72,9 @@ def test_phaseshift_quarter_wave():
         f"Phase diff should be -pi/2: {phase_diff} vs {expected_phase_diff}"
 
 
-def test_phaseshift_half_wave():
+def test_tdvcvs_half_wave():
     """At half wavelength delay, output is 180 degrees out of phase (inverted)."""
-    from pyvibrate.frequencydomain import Network, R, PhaseShift, ACSource
+    from pyvibrate.frequencydomain import Network, R, ConstantTimeDelayVCVS, ACSource
 
     net = Network()
     net, n1 = net.node("n1")
@@ -77,7 +86,7 @@ def test_phaseshift_half_wave():
     tau_half = 1.0 / (2 * freq)
 
     net, vs = ACSource(net, n1, net.gnd, name="vs", value=1.0)
-    net, ps1 = PhaseShift(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=tau_half)
+    net, ps1 = ConstantTimeDelayVCVS(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=tau_half)
     net, r1 = R(net, n2, net.gnd, name="R1", value=100.0)
 
     solver = net.compile()
@@ -93,9 +102,9 @@ def test_phaseshift_half_wave():
     assert abs(ratio + 1.0) < 0.01, f"V_out should be -V_in: ratio = {ratio}"
 
 
-def test_phaseshift_frequency_dependent():
+def test_tdvcvs_frequency_dependent():
     """Phase shift increases linearly with frequency for fixed delay."""
-    from pyvibrate.frequencydomain import Network, R, PhaseShift, ACSource
+    from pyvibrate.frequencydomain import Network, R, ConstantTimeDelayVCVS, ACSource
 
     net = Network()
     net, n1 = net.node("n1")
@@ -104,7 +113,7 @@ def test_phaseshift_frequency_dependent():
     tau = 1e-6  # 1 us delay
 
     net, vs = ACSource(net, n1, net.gnd, name="vs", value=1.0)
-    net, ps1 = PhaseShift(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=tau)
+    net, ps1 = ConstantTimeDelayVCVS(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=tau)
     net, r1 = R(net, n2, net.gnd, name="R1", value=100.0)
 
     solver = net.compile()
@@ -130,16 +139,16 @@ def test_phaseshift_frequency_dependent():
             f"At {freq/1e3} kHz: phase = {phase_shift}, expected = {expected_phase}"
 
 
-def test_phaseshift_differentiable():
+def test_tdvcvs_differentiable():
     """Test that delay parameter is differentiable."""
-    from pyvibrate.frequencydomain import Network, R, PhaseShift, ACSource
+    from pyvibrate.frequencydomain import Network, R, ConstantTimeDelayVCVS, ACSource
 
     net = Network()
     net, n1 = net.node("n1")
     net, n2 = net.node("n2")
 
     net, vs = ACSource(net, n1, net.gnd, name="vs", value=1.0)
-    net, ps1 = PhaseShift(net, n1, net.gnd, n2, net.gnd, name="PS1")  # No default tau
+    net, ps1 = ConstantTimeDelayVCVS(net, n1, net.gnd, n2, net.gnd, name="PS1")  # No default tau
     net, r1 = R(net, n2, net.gnd, name="R1", value=100.0)
 
     solver = net.compile()
@@ -160,16 +169,16 @@ def test_phaseshift_differentiable():
         f"dphase/dtau should be -omega: {dphase_dtau} vs {expected_deriv}"
 
 
-def test_phaseshift_magnitude_unity():
-    """PhaseShift should not change amplitude - only phase."""
-    from pyvibrate.frequencydomain import Network, R, PhaseShift, ACSource
+def test_tdvcvs_magnitude_unity():
+    """ConstantTimeDelayVCVS should not change amplitude - only phase."""
+    from pyvibrate.frequencydomain import Network, R, ConstantTimeDelayVCVS, ACSource
 
     net = Network()
     net, n1 = net.node("n1")
     net, n2 = net.node("n2")
 
     net, vs = ACSource(net, n1, net.gnd, name="vs", value=1.0)
-    net, ps1 = PhaseShift(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=1e-6)
+    net, ps1 = ConstantTimeDelayVCVS(net, n1, net.gnd, n2, net.gnd, name="PS1", tau=1e-6)
     net, r1 = R(net, n2, net.gnd, name="R1", value=100.0)
 
     solver = net.compile()

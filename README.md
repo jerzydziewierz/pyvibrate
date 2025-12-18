@@ -25,7 +25,7 @@ pyvibrate/
     frequencydomain/   # Steady-state AC analysis with complex phasors
         R, C, L        # Passive components
         ACSource       # AC voltage source with phase
-        PhaseShift     # Pure phase delay element
+        ConstantTimeDelayVCVS  # Time delay element (active/energy source)
         VCVS           # Voltage-controlled voltage source
         TLine          # Transmission line (Z0, tau)
 ```

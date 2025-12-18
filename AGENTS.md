@@ -18,7 +18,7 @@ pyvibrate/
 | C | Y = jωC | Positive imaginary admittance |
 | L | Y = -j/(ωL) | Negative imaginary admittance |
 | ACSource | V∠θ (complex phasor) | Amplitude and phase |
-| PhaseShift | exp(-jωτ) | Pure phase delay (no reflections) |
+| ConstantTimeDelayVCVS | exp(-jωτ) | Time delay (active element, no impedance effects) |
 | VCVS | Vout = gain·Vctrl | Voltage-controlled voltage source |
 | TLine | Y₁₁=Y₂₂=-jcot(ωτ)/Z₀, Y₁₂=Y₂₁=jcsc(ωτ)/Z₀ | Transmission line with reflections |
 
@@ -27,7 +27,7 @@ pyvibrate/
 - C: impedance, frequency-dependence, phase, differentiability
 - L: impedance, frequency-dependence, phase, LC resonance, differentiability
 - ACSource: basic operation
-- PhaseShift: zero delay, quarter/half wave, frequency-dependence, differentiability
+- ConstantTimeDelayVCVS: zero delay, quarter/half wave, frequency-dependence, differentiability
 - VCVS: unity/variable gain, differential input, differentiability
 - TLine: matched/open/short loads, impedance transformation, differentiability
 

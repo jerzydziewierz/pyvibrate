@@ -6,13 +6,13 @@ using Modified Nodal Analysis (MNA) with complex admittances.
 Components:
     - R, C, L: Basic passive components
     - ACSource: AC voltage source with magnitude and phase
-    - PhaseShift: Pure phase delay element
+    - ConstantTimeDelayVCVS: Ideal time delay element (active/energy source)
     - VCVS: Voltage-controlled voltage source
     - TLine: Transmission line with characteristic impedance and delay
 """
 
 from .network import Network, Node, ComponentRef, ComponentSpec
-from .components import R, ACSource, C, L, PhaseShift, VCVS, TLine
+from .components import R, ACSource, C, L, ConstantTimeDelayVCVS, VCVS, TLine
 from .solver import Solver, Solution, compile_network
 from .subcircuits import Series, Parallel
 
@@ -27,7 +27,7 @@ __all__ = [
     "C",
     "L",
     "ACSource",
-    "PhaseShift",
+    "ConstantTimeDelayVCVS",
     "VCVS",
     "TLine",
     # Solver

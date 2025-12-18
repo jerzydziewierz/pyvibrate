@@ -78,7 +78,7 @@ sol = solver.solve_at(omega, params)
 | Inductor | `L(net, a, b, name="L1", value=1e-3)` | Inductance in Henrys | Z = jωL |
 | AC Source | `ACSource(net, p, n, name="vs", value=1.0, phase=0.0)` | Magnitude (V), Phase (rad) | - |
 | VCVS | `VCVS(net, out_p, out_n, ctrl_p, ctrl_n, name="E1", gain=10.0)` | Voltage gain | - |
-| Phase Shift | `PhaseShift(net, in_p, in_n, out_p, out_n, name="PS1", tau=1e-9)` | Delay (s) | V_out = V_in·e^(-jωτ) |
+| Constant Time Delay | `ConstantTimeDelayVCVS(net, in_p, in_n, out_p, out_n, name="DL1", tau=1e-9)` | Delay (s) | V_out = V_in·e^(-jωτ) (active) |
 | Transmission Line | `TLine(net, p1_p, p1_n, p2_p, p2_n, name="TL1", Z0=50.0, tau=5e-9)` | Z0 (Ohm), τ (s) | Y-parameter model |
 
 ### Component Behavior by Frequency
@@ -97,7 +97,7 @@ v_node = solver.v(sol, n2)
 magnitude = jnp.abs(v_node)
 phase_deg = jnp.angle(v_node) * 180 / jnp.pi
 
-# Probe source current (for ACSource, VCVS, PhaseShift)
+# Probe source current (for ACSource, VCVS, ConstantTimeDelayVCVS)
 i_src = solver.i(sol, vs)
 
 # Probe input impedance at a source
