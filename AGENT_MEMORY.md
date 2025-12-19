@@ -73,8 +73,8 @@ pyvibrate/
 2. **C** - Capacitor (Y = jωC, negative imaginary impedance)
 3. **L** - Inductor (Y = -j/(ωL), positive imaginary impedance)
 4. **ACSource** - AC voltage source with magnitude and phase
-5. **PhaseShift** - Pure phase delay element (V_out = V_in * exp(-jωτ))
-6. **VCVS** - Voltage-Controlled Voltage Source (V_out = gain * V_ctrl)
+5. **VCVS** - Voltage-Controlled Voltage Source (V_out = gain * V_ctrl)
+6. **TDVCVS** - Time Delay Voltage-Controlled Voltage Source (V_out = V_in * exp(-jωτ))
 7. **TLine** - Transmission line with Y-parameters (Z₀, τ)
 
 ### Key Features
@@ -182,3 +182,85 @@ The circuit simulations were correct in all cases; only the analytical parameter
 | BW | ~16 Hz measured | 20.08 Hz |
 
 The measured bandwidth is slightly narrower than theoretical due to finite simulation resolution around the -3dB points.
+
+---
+
+## Session: 2025-12-18
+
+### Transformer Component Refactoring and Planning
+
+**Component Rename Completed:**
+Renamed `PhaseShift` → `ConstantTimeDelayVCVS` to clarify it's an active element (energy source).
+- Updated 11 files: components.py, solver.py, __init__.py, 5 test files, 3 docs, 1 notebook
+- Renamed test file: test_freqdomain_phaseshift.py → test_freqdomain_tdvcvs.py
+- All tests passing (12 tests total across test_freqdomain_tdvcvs.py and test_delay_line_fft.py)
+
+**Transformer Discussion and Planning:**
+Grey asked how to model a magnetic transformer in frequency domain. Key requirements:
+- Realistic model with magnetizing inductance, leakage, winding resistance, core losses
+- Physical parameters: N1, N2, A_core, l_m, mu_r, B_sat
+- Core saturation effects (nonlinear)
+- VNA parameter extraction notebook (open circuit, short circuit, loaded, saturation curve tests)
+
+**Critical Challenge Identified:**
+Core saturation is fundamentally nonlinear (L depends on I), but PyVibrate's frequency domain solver is purely linear (direct `jnp.linalg.solve`, no Newton-Raphson).
+
+Explored three agents in parallel:
+1. Component implementation patterns (factory functions, MNA stamping, Y-parameters)
+2. Nonlinear solver capabilities (confirmed: NONE - only linear solver exists)
+3. VNA measurement patterns (z_in function, demo_freqdomain_fitting.ipynb, JAX autodiff)
+
+**User Decisions (via AskUserQuestion):**
+1. **Saturation:** Linear model only with saturation warnings (no nonlinear solver for now)
+2. **Domain:** Frequency domain only (skip time domain entirely)
+3. **Core model:** Simple tanh reference (B = B_sat * tanh(H/H_c)) for documentation
+4. **VNA tests:** ALL four tests in notebook (open, short, loaded, saturation curve)
+
+**Implementation Plan Created:**
+Comprehensive plan written to `AGENTS_realistic_transformer_plan.md` covering:
+
+**Architecture:**
+- Single `Transformer()` component with Y-parameter 2-port stamping
+- Equivalent circuit: R1 + L_leak1 + (L_mag║R_core) on primary, R2 + L_leak2 on secondary
+- Physical params → circuit params: L = μ₀*μᵣ*N²*A/l_m, M = k*sqrt(L1*L2)
+
+**MNA Stamping:**
+- Build Z-parameters: Z11 = R1 + jωL_leak1 + (jωL_mag║R_core), Z12 = jωM
+- Convert to Y via 2×2 inversion: Y = Z⁻¹
+- Stamp with existing `_stamp_2port_admittance()` helper
+
+**Saturation Warning:**
+- Post-solve check: estimate I_mag from V_prim/(jωL_mag)
+- Compute B = μ₀*μᵣ*N*I/l_m, compare to B_sat
+- Warn if B/B_sat > 0.8 (approximate, doesn't account for load current)
+
+**Files to Create:**
+1. `pyvibrate/frequencydomain/physical_constants.py` - μ₀, compute_inductance(), compute_flux_density()
+2. `tests/test_freqdomain_transformer.py` - 10 unit tests
+3. `notebooks/demo_transformer_vna_extraction.ipynb` - 4-section tutorial
+
+**Files to Modify:**
+1. `pyvibrate/frequencydomain/components.py` - add Transformer() factory
+2. `pyvibrate/frequencydomain/solver.py` - add stamping case, saturation check
+3. `pyvibrate/frequencydomain/__init__.py` - exports
+
+**Implementation Sequence:**
+- Phase 1: Core component (physical_constants.py, Transformer(), stamping, 3 basic tests)
+- Phase 2: Full testing (7 more tests, validation)
+- Phase 3: Saturation warning (check function, test)
+- Phase 4: VNA notebook (4 sections with extraction)
+- Phase 5: Documentation (docstrings, README)
+
+**Critical Details:**
+- Edge cases: DC (omega_safe), resonance (det_safe), coupling bounds (k clipped)
+- JAX differentiability: use jnp.where() not Python if, all computations in stamping
+- VNA extraction: sequential (not simultaneous) for better conditioning
+- Numerical stability: safe divisions, safe omegas, determinant checks
+
+**Current State:**
+- Planning complete and documented in `AGENTS_realistic_transformer_plan.md`
+- User reviewed plan and saved it
+- Ready to begin Phase 1 implementation tomorrow
+
+**Next Session:**
+Start with Phase 1: Create physical_constants.py module with fundamental constants and helper functions.

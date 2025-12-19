@@ -8,7 +8,7 @@ pyvibrate/
     frequencydomain/      # COMPLETE - Steady-state AC analysis
 ```
 
-## Frequency-Domain Module (Complete)
+## Frequency-Domain Module (Usably Complete)
 
 ### Components Implemented
 
@@ -35,6 +35,28 @@ pyvibrate/
 - `demo_freqdomain_sensitivity.ipynb` - Sensitivity analysis (d|Z|/dC, d|Z|/dL)
 - `demo_freqdomain_fitting.ipynb` - Parameter identification (fit capacitor ESR/ESL/C to noisy data)
 - `demo_delay_line.ipynb` - Delay line in both domains: time-domain with FFT, freq-domain with iFFT
+
+### Current Work: Realistic Transformer Component
+
+**Status:** Planning complete, ready for implementation
+
+**Detailed Plan:** See `AGENTS_realistic_transformer_plan.md`
+
+**Goal:** Frequency-domain transformer with physical parameters (N1, N2, A_core, l_m, mu_r, B_sat) and VNA extraction notebook
+
+**Key Features:**
+- Y-parameter 2-port stamping (similar to TLine)
+- Equivalent circuit: magnetizing inductance, core loss, leakage, winding resistance
+- Linear solver with post-solve saturation warnings
+- Four VNA tests: open circuit, short circuit, loaded, and saturation curve extraction
+
+**Implementation Phases:**
+1. Core component: physical_constants.py, Transformer() factory, MNA stamping
+2. Testing: 10 unit tests validating all aspects
+3. Saturation warning: check_transformer_saturation() helper
+4. VNA notebook: comprehensive parameter extraction tutorial
+
+**Next Steps:** Begin Phase 1 (core component implementation)
 
 ### Future Work
 - Frequency sweep helper function
